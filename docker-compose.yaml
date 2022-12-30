@@ -1,0 +1,45 @@
+version: '3'
+ 
+services:
+  mysql_s:
+    image: mysql:latest
+    container_name: mysql_c
+    command: ["--default-authentication-plugin=mysql_native_password","--max_connections=10000"]
+    environment:
+      MYSQL_ROOT_PASSWORD: my_secret_password
+      MYSQL_DATABASE: main-server
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin@123
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_c
+    links:
+      - mysql_s
+    environment:
+      PMA_HOST: mysql_c
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 81:80
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    #command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - cache:/data
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+volumes:
+  dbdata:
+  cache:
